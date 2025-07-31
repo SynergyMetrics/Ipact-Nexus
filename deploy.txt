@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+# Navigate to project directory
+cd /run/media/mts/8E2AA3DC2AA3C017/Users/mts/Documents/1\ Nexus\ \(UWA\)/Hugo/Ipac-Nexus-Docsy
+
+# Ensure on main branch
+git checkout main
+
+# Build the site
+hugo --minify
+
+# Switch to gh-pages branch
+git checkout gh-pages
+
+# Pull remote changes with rebase
+git pull origin gh-pages --rebase || {
+    echo "Resolve conflicts in nvim, then run 'git add .', 'git rebase --continue', and re-run this script."
+    exit 1
+}
+
+# Clear existing files and copy new build
+git rm -rf .
+cp -r public/* .
+
+# Stage and commit
+git add .
+git commit -m "Nexus - Model site update for gh-pages" || echo "No changes to commit"
+
+# Push to gh-pages
+git push origin gh-pages
+
+# Switch back to main
+git checkout main
+
+echo "Deployed to https://synergymetrics.github.io/Ipac-Nexus/"
